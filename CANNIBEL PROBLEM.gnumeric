@@ -1,0 +1,59 @@
+from collections import deque
+
+def is_valid_state(m1, c1, m2, c2):
+    # Check if state is valid
+    if (m1 < 0 or m1 > 3 or c1 < 0 or c1 > 3 or
+        m2 < 0 or m2 > 3 or c2 < 0 or c2 > 3):
+        return False
+    if (m1 < c1 and m1 > 0) or (m2 < c2 and m2 > 0):
+        return False
+    return True
+
+def get_neighbors(m1, c1, m2, c2, boat):
+    # Generate possible states by moving people
+    moves = []
+    if boat == 0:  # Boat on the left side
+        for m, c in [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]:
+            nm1, nc1 = m1 - m, c1 - c
+            nm2, nc2 = m2 + m, c2 + c
+            if is_valid_state(nm1, nc1, nm2, nc2):
+                moves.append((nm1, nc1, nm2, nc2, 1))
+    else:  # Boat on the right side
+        for m, c in [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]:
+            nm1, nc1 = m1 + m, c1 + c
+            nm2, nc2 = m2 - m, c2 - c
+            if is_valid_state(nm1, nc1, nm2, nc2):
+                moves.append((nm1, nc1, nm2, nc2, 0))
+    return moves
+
+def bfs():
+    initial_state = (3, 3, 0, 0, 0)  # (Missionaries on left, Cannibals on left, Missionaries on right, Cannibals on right, Boat position)
+    goal_state = (0, 0, 3, 3, 1)
+    queue = deque([(initial_state, [])])
+    visited = set()
+    visited.add(initial_state)
+
+    while queue:
+        (m1, c1, m2, c2, boat), path = queue.popleft()
+
+        if (m1, c1, m2, c2, boat) == goal_state:
+            return path + [(m1, c1, m2, c2, boat)]
+
+        for next_state in get_neighbors(m1, c1, m2, c2, boat):
+            if next_state not in visited:
+                visited.add(next_state)
+                queue.append((next_state, path + [(m1, c1, m2, c2, boat)]))
+    
+    return None
+
+def print_solution(solution):
+    if solution:
+        for state in solution:
+            m1, c1, m2, c2, boat = state
+            print(f"Left Bank: {m1} missionaries, {c1} cannibals | Right Bank: {m2} missionaries, {c2} cannibals | Boat {'Left' if boat == 0 else 'Right'}")
+    else:
+        print("No solution found.")
+
+# Example usage
+solution = bfs()
+print_solution(solution)
